@@ -14,7 +14,7 @@ class NewTrilinos < Formula
   depends_on :fortran       => :recommended
   depends_on :x11           => :recommended
 
-  depends_on :python        => :recommended
+  depends_on :python        => ["numpy", :recommended]
   depends_on "swig"         => :build if build.with? :python
 
   depends_on "cmake"        => :build
