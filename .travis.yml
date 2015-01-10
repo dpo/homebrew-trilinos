@@ -9,12 +9,14 @@ install:
   - mkdir -p $(brew --repo)/Library/Taps/travis
   - ln -s $PWD $(brew --repo)/Library/Taps/travis/travis-testtap
   - brew tap --repair
-  - brew doctor
-  - rm $(brew --repo)/Library/Formulas/trilinos.rb  # Clobber current formula.
+  #- brew doctor
+
+env:
+  - PKG=travis/travis-testtap/trilinos
 
 script:
-  - brew install $(brew deps trilinos)  # No need for verbose mode here.
-  - brew install -v trilinos
-  - brew test -v trilinos
-  - brew audit trilinos --strict
+  - brew install $(brew deps $PKG)  # No need for verbose mode here.
+  - brew install -v $PKG
+  - brew test -v $PKG
+  - brew audit $PKG --strict
 
