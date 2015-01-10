@@ -100,7 +100,7 @@ class NewTrilinos < Formula
     args << "-DSuperLU_INCLUDE_DIRS=#{Formula["superlu"].opt_include}/superlu" if build.with? "superlu"
 
     args << onoff("-DTPL_ENABLE_SuperLUDist:BOOL=", (build.with? "superlu_dist"))
-    args << "-DSuperLUDist_INCLUDE_DIRS=#{Formula['superlu_dist'].include}/superlu_dist" if build.with? "superlu_dist"
+    args << "-DSuperLUDist_INCLUDE_DIRS=#{Formula['superlu_dist'].opt_include}/superlu_dist" if build.with? "superlu_dist"
 
     args << onoff("-DTPL_ENABLE_TBB:BOOL=",         (build.with? "tbb"))
     args << onoff("-DTPL_ENABLE_X11:BOOL=",         (build.with? :x11))
