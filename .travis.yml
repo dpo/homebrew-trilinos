@@ -3,15 +3,17 @@ language: objective-c  # Just to be sure we're on OSX, with Homebrew.
 install:
   - unset DYLD_LIBRARY_PATH
   - brew update
-  - brew tap dpo/trilinos
+  - brew tap homebrew/science
+  - brew tap homebrew/versions
+  # Install homebrew/trilinos as tap.
+  - mkdir -p $(brew --repo)/Library/Taps/travis
+  - ln -s $PWD $(brew --repo)/Library/Taps/travis/travis-testtap
+  - brew tap --repair
   #- brew doctor
 
-env:
-  - PKG=dpo/trilinos/trilinos
-
 script:
-  - brew install $(brew deps $PKG)  # No need for verbose mode here.
-  - brew install -v $PKG
-  - brew test -v $PKG
-  - brew audit $PKG --strict
+  - brew install $(brew deps new-trilinos)  # No need for verbose mode here.
+  - brew install -v new-trilinos
+  - brew test -v new-trilinos
+  - brew audit new-trilinos --strict
 
