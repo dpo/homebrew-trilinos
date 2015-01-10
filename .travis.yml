@@ -7,7 +7,7 @@ install:
   #- brew doctor
 
 env:
-  - PKG=dpo/trilinos
+  - PKG=dpo/trilinos/trilinos
 
 script:
   - brew install $(brew deps $PKG)  # No need for verbose mode here.
