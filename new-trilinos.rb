@@ -1,7 +1,7 @@
-class Trilinos < Formula
+class NewTrilinos < Formula
   homepage "http://trilinos.sandia.gov"
-  url "http://trilinos.sandia.gov/download/files/trilinos-11.12.1-Source.tar.gz"
-  sha1 "84cd7f4fba7946e3d391f03d52902954bb4dcd60"
+  url "http://trilinos.org/oldsite/download/files/trilinos-11.12.1-Source.tar.bz2"
+  sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
   head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git
 
   option "with-teko",  "Enable the Teko secondary-stable package"
