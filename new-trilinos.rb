@@ -35,6 +35,7 @@ class NewTrilinos < Formula
   depends_on "parmetis"     => :optional
   depends_on "scalapack"    => :optional
   depends_on "superlu"      => :optional
+  depends_on "superlu_dist" => :optional if build.with? :mpi
   depends_on "tbb"          => :recommended
 
   def onoff(s, cond)
@@ -97,6 +98,9 @@ class NewTrilinos < Formula
 
     args << onoff("-DTPL_ENABLE_SuperLU:BOOL=",     (build.with? "superlu"))
     args << "-DSuperLU_INCLUDE_DIRS=#{Formula["superlu"].opt_include}/superlu" if build.with? "superlu"
+
+    args << onoff("-DTPL_ENABLE_SuperLUDist:BOOL=", (build.with? "superlu_dist"))
+    args << "-DSuperLUDist_INCLUDE_DIRS=#{Formula['superlu_dist'].include}/superlu_dist" if build.with? "superlu_dist"
 
     args << onoff("-DTPL_ENABLE_TBB:BOOL=",         (build.with? "tbb"))
     args << onoff("-DTPL_ENABLE_X11:BOOL=",         (build.with? :x11))
