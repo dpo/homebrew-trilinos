@@ -3,6 +3,7 @@ language: objective-c  # Just to be sure we're on OSX, with Homebrew.
 install:
   - unset DYLD_LIBRARY_PATH
   - brew update
+  - brew tap dpo/trilinos
   #- brew doctor
 
 env:
