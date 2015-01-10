@@ -16,7 +16,6 @@ class NewTrilinos < Formula
 
   depends_on :python        => :recommended
   depends_on "swig"         => :build if build.with? :python
-  # depends_on "homebrew/versions/swig208" => :build if build.with? :python
 
   depends_on "cmake"        => :build
   depends_on "boost"        => :recommended
