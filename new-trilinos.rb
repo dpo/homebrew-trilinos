@@ -117,7 +117,7 @@ class NewTrilinos < Formula
     mkdir "build" do
       system "cmake", "..", *args
       system "make", "VERBOSE=1"
-      system "ctest" if build.with? "check"
+      system ("ctest -j" + Hardware::CPU.cores) if build.with? "check"
       system "make", "install"
     end
   end
