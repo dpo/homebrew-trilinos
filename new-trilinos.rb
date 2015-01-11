@@ -26,14 +26,14 @@ class NewTrilinos < Formula
   depends_on "cppunit"      => :optional
   depends_on "eigen"        => :optional
   depends_on "glpk"         => :optional
-  depends_on "homebrew/versions/hdf5-1.8.12" => :optional
+  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
   depends_on "hwloc"        => :optional
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Currently fails
   depends_on "metis"        => :optional
   depends_on "mumps"        => :optional
   # ML packages in the current state does not compile with Petsc >= 3.3
   # depends_on "petsc"        => :optional
-  depends_on "parmetis"     => :optional
+  depends_on "parmetis"     => :optional if build.with? :mpi
   depends_on "scalapack"    => :optional
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi
