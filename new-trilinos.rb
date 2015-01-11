@@ -31,7 +31,8 @@ class NewTrilinos < Formula
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Currently fails
   depends_on "metis"        => :optional
   depends_on "mumps"        => :optional
-  depends_on "petsc"        => :optional
+  # ML packages in the current state does not compile with Petsc >= 3.3
+  # depends_on "petsc"        => :optional
   depends_on "parmetis"     => :optional
   depends_on "scalapack"    => :optional
   depends_on "superlu"      => :optional
@@ -88,7 +89,9 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
     args << onoff("-DTPL_ENABLE_METIS:BOOL=",       (build.with? "metis"))
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
-    args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
+
+    # args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
+    args << "-DTPL_ENABLE_PETSC:BOOL=OFF"
 
     args << onoff("-DTPL_ENABLE_ParMETIS:BOOL=",    (build.with? "parmetis"))
     args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
