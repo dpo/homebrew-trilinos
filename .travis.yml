@@ -15,8 +15,7 @@ install:
   - brew install numpy
 
 script:
-  - travis_wait brew install new-trilinos
-  - brew gist-logs new-trilinos
+  - bash $TRAVIS_BUILD/travis.sh
   - brew test new-trilinos
   - brew audit new-trilinos --strict
 
