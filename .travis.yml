@@ -10,8 +10,7 @@ install:
   - ln -s $PWD $(brew --repo)/Library/Taps/travis/travis-testtap
   - brew tap --repair
   #- brew doctor
-  - brew uninstall $(brew deps new-trilinos)
-  - brew install $(brew deps new-trilinos)  # No need for verbose mode here.
+  - brew reinstall $(brew deps new-trilinos)  # No need for verbose mode here.
   - brew tap homebrew/python
   - brew install numpy
 
