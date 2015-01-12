@@ -15,7 +15,8 @@ install:
   - brew install numpy
 
 script:
-  - brew install -v new-trilinos
-  - brew test -v new-trilinos
+  - brew install new-trilinos
+  - brew gist-logs new-trilinos
+  - brew test new-trilinos
   - brew audit new-trilinos --strict
 
