@@ -55,6 +55,7 @@ class NewTrilinos < Formula
                -DTrilinos_ENABLE_EXAMPLES:BOOL=ON
                -DTrilinos_VERBOSE_CONFIGURE:BOOL=OFF
                -DTrilinos_WARNINGS_AS_ERRORS_FLAGS=""
+               -DTrilinos_ENABLE_OpenMP:BOOL=OFF
                -DSacado_ENABLE_TESTS=OFF
                -DEpetraExt_ENABLE_TESTS=OFF]  # --with-hypre fails without this.
 
