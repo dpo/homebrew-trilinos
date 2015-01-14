@@ -10,6 +10,9 @@ class NewTrilinos < Formula
   option "with-release",    "Perform release build"
   option :cxx11
 
+  option "with-cholmod", "Build with Cholmod (Experimental TPL) from suite-sparse"
+  option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse"
+
   depends_on :mpi           => [:cc, :cxx, :recommended]
   depends_on :fortran       => :recommended
   depends_on :x11           => :recommended
@@ -45,7 +48,7 @@ class NewTrilinos < Formula
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
   depends_on "tbb"          => :recommended #Experimental TPL => :optional?
-  depends_on "qd"           => :optional
+  depends_on "qd"           => :optional # Currently fails due to global namespace issues
   #TODO: lemon is currently built as executable only
   #depends_on "lemon"        => :optional #Experimental TPL
   depends_on "glm"          => :optional #Experimental TPL
@@ -91,14 +94,19 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_ADOLC:BOOL=",       (build.with? "adol-c"))
 
     args << onoff("-DTPL_ENABLE_AMD:BOOL=",         (build.with? "suite-sparse"))
-    #Cholmod and CSparse are Experimental TPL => extra option to turn them on?
+
     # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
-    args << onoff("-DTPL_ENABLE_CSparse:BOOL=",     (build.with? "suite-sparse"))
-    args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     (build.with? "suite-sparse"))
+    if (build.with? "suite-sparse") and (build.with? "csparse")
+      args << "-DTPL_ENABLE_CSparse:BOOL=ON"
+      args << "-DCSparse_LIBRARY_NAMES=cxsparse;amd;colamd;suitesparseconfig"
+    else
+      args << "-DTPL_ENABLE_CSparse:BOOL=OFF"
+    end
+    args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     ((build.with? "suite-sparse") and (build.with? "cholmod")) )
+
     #TODO?: --     Did not find UMFPACK TPL header: UFconfig.h
     args << onoff("-DTPL_ENABLE_UMFPACK:BOOL=",     (build.with? "suite-sparse"))
     args << "-DUMFPACK_LIBRARY_NAMES=umfpack;amd;colamd;cholmod;suitesparseconfig" if build.with? "suite-sparse"
-    args << "-DCSparse_LIBRARY_NAMES=cxsparse;amd;colamd;suitesparseconfig" if build.with? "suite-sparse"
 
     args << onoff("-DTPL_ENABLE_CppUnit:BOOL=",     (build.with? "cppunit"))
     # gcc: add CPPUNIT include/lib dirs.
@@ -109,7 +117,7 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
-    args << onoff("-DTPL_ENABLE_METIS:BOOL=",       ((build.with? "metis") and (not build.with? "parmetis")) )
+    args << onoff("-DTPL_ENABLE_METIS:BOOL=",       ((build.with? "metis") and (build.without? "parmetis")) )
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
 
     # args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
