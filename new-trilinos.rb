@@ -9,8 +9,13 @@ class NewTrilinos < Formula
   option "with-check", "Perform build time checks (time consuming and contains failures)"
   option :cxx11
 
+  # options and dependencies which are not supported with current version 
+  # are commented with #-
+  # A short comment at the end of those lines explain each issue.
+  # They are not removed in order to avoid fruitless attempts to add them later
+
   option "with-cholmod", "Build with Cholmod (Experimental TPL) from suite-sparse"
-  option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse"
+  option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse" # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
 
   depends_on :mpi           => [:cc, :cxx, :recommended]
   depends_on :fortran       => :recommended
@@ -23,27 +28,27 @@ class NewTrilinos < Formula
   depends_on "boost"        => :recommended
   depends_on "scotch"       => :recommended
   depends_on "netcdf"       => :optional
-  depends_on "adol-c"       => :optional # TODO: move ADOL-C's config.h to prefix/include/adolc/config.h
+  depends_on "adol-c"       => :optional
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :optional
   depends_on "eigen"        => :optional #Experimental TPL, Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "glpk"         => :optional #Experimental TPL
   depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) #Experimental TPL
   depends_on "hwloc"        => :optional
-  depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Currently fails, experimental TPL
+  depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile; experimental TPL
   depends_on "metis"        => :optional
   depends_on "mumps"        => :optional
-  depends_on "petsc"        => :optional # ML packages in the current state does not compile with Petsc >= 3.3
+  #-depends_on "petsc"        => :optional # ML packages in the current state does not compile with Petsc >= 3.3
   depends_on "parmetis"     => :optional if build.with? :mpi
-  depends_on "scalapack"    => :optional
+  depends_on "scalapack"    => ["--with-shared-libs", :optional]
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
   depends_on "tbb"          => :recommended #Experimental TPL => :optional?
-  depends_on "qd"           => :optional # Currently fails due to global namespace issues
-  depends_on "lemon"        => :optional #Experimental TPL, lemon is currently built as executable only, no libraries!
+  depends_on "qd"           => :optional # Fails due to global namespace issues (std::pow vs qd::pow)
+  #-depends_on "lemon"        => :optional #Experimental TPL, lemon is currently built as executable only, no libraries!
   depends_on "glm"          => :optional #Experimental TPL
-  depends_on "cask"         => :optional #Experimental TPL, cask is currently built as executable only, no libraries!
-  depends_on "binutils"     => :optional #Currently fails, miss libiberty, see https://github.com/facebook/atosl/issues/12
+  #-depends_on "cask"         => :optional #Experimental TPL, cask is currently built as executable only, no libraries!
+  depends_on "binutils"     => :optional #libiberty-related PR: #35881
 
   #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
 
@@ -83,7 +88,6 @@ class NewTrilinos < Formula
 
     args << onoff("-DTPL_ENABLE_AMD:BOOL=",         (build.with? "suite-sparse"))
 
-    # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
     if (build.with? "suite-sparse") and (build.with? "csparse")
       args << "-DTPL_ENABLE_CSparse:BOOL=ON"
       args << "-DCSparse_LIBRARY_NAMES=cxsparse;amd;colamd;suitesparseconfig"
