@@ -95,6 +95,7 @@ class NewTrilinos < Formula
     # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
     args << onoff("-DTPL_ENABLE_CSparse:BOOL=",     (build.with? "suite-sparse"))
     args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     (build.with? "suite-sparse"))
+    #TODO?: --     Did not find UMFPACK TPL header: UFconfig.h
     args << onoff("-DTPL_ENABLE_UMFPACK:BOOL=",     (build.with? "suite-sparse"))
     args << "-DUMFPACK_LIBRARY_NAMES=umfpack;amd;colamd;cholmod;suitesparseconfig" if build.with? "suite-sparse"
     args << "-DCSparse_LIBRARY_NAMES=cxsparse;amd;colamd;suitesparseconfig" if build.with? "suite-sparse"
@@ -107,7 +108,8 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_HDF5:BOOL=",        (build.with? "hdf5"))
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
-    args << onoff("-DTPL_ENABLE_METIS:BOOL=",       (build.with? "metis"))
+    # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
+    args << onoff("-DTPL_ENABLE_METIS:BOOL=",       ((build.with? "metis") and (not build.with? "parmetis")) )
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
 
     # args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
@@ -117,6 +119,7 @@ class NewTrilinos < Formula
     args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
     args << "-DParMETIS_INCLUDE_DIRS=#{Formula["parmetis"].opt_include}" if build.with? "parmetis"
 
+    # TODO: apparently Trilinos needs BLACS for Scalapack
     args << onoff("-DTPL_ENABLE_SCALAPACK:BOOL=",   (build.with? "scalapack"))
 
     args << onoff("-DTPL_ENABLE_SuperLU:BOOL=",     (build.with? "superlu"))
