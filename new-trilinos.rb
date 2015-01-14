@@ -22,13 +22,20 @@ class NewTrilinos < Formula
   depends_on "scotch"       => :recommended
   depends_on "netcdf"       => :optional
   depends_on "adol-c"       => :optional
+  #TODO:
+  #from trilinos' cmake:
+    # NOTE: ADOL-C has a bug in the installtion process.  It fails to
+    # install the file "config.h" into the install directory.  This is
+    # required to compile the library, so you must manually copy the file
+    # over into the installation directory.
+  #indeed: --     Did not find ADOLC TPL header: adolc/config.h
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :optional
-  depends_on "eigen"        => :optional
-  depends_on "glpk"         => :optional
-  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
+  depends_on "eigen"        => :optional #Experimental TPL
+  depends_on "glpk"         => :optional #Experimental TPL
+  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) #Experimental TPL
   depends_on "hwloc"        => :optional
-  depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Currently fails
+  depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Currently fails, experimental TPL
   depends_on "metis"        => :optional
   depends_on "mumps"        => :optional
   # ML packages in the current state does not compile with Petsc >= 3.3
@@ -37,7 +44,17 @@ class NewTrilinos < Formula
   depends_on "scalapack"    => :optional
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi
-  depends_on "tbb"          => :recommended
+  depends_on "tbb"          => :recommended #Experimental TPL => :optional?
+  depends_on "qd"           => :optional
+  #TODO: lemon is currently built as executable only
+  #depends_on "lemon"        => :optional #Experimental TPL
+  depends_on "glm"          => :optional #Experimental TPL
+  #TODO: cask is currently built as executable only!
+  #depends_on "cask"         => :optional #Experimental TPL
+  #TODO: Error: Could not find a library in the set "iberty" for the TPL BinUtils!
+  #depends_on "binutils"     => :optional
+
+  #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
 
   def onoff(s, cond)
     s + ((cond) ? "ON" : "OFF")
@@ -74,6 +91,7 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_ADOLC:BOOL=",       (build.with? "adol-c"))
 
     args << onoff("-DTPL_ENABLE_AMD:BOOL=",         (build.with? "suite-sparse"))
+    #Cholmod and CSparse are Experimental TPL => extra option to turn them on?
     args << onoff("-DTPL_ENABLE_CSparse:BOOL=",     (build.with? "suite-sparse"))
     args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     (build.with? "suite-sparse"))
     args << onoff("-DTPL_ENABLE_UMFPACK:BOOL=",     (build.with? "suite-sparse"))
@@ -105,6 +123,12 @@ class NewTrilinos < Formula
 
     args << onoff("-DTPL_ENABLE_SuperLUDist:BOOL=", (build.with? "superlu_dist"))
     args << "-DSuperLUDist_INCLUDE_DIRS=#{Formula["superlu_dist"].opt_include}/superlu_dist" if build.with? "superlu_dist"
+
+    args << onoff("-DTPL_ENABLE_QD:BOOL=",         (build.with? "qd"))
+    #args << onoff("-DTPL_ENABLE_Lemon:BOOL=",      (build.with? "lemon"))
+    args << onoff("-DTPL_ENABLE_GLM:BOOL=",        (build.with? "glm"))
+    #args << onoff("-DTPL_ENABLE_CASK:BOOL=",       (build.with? "cask"))
+    #args << onoff("-DTPL_ENABLE_BinUtils:BOOL=",   (build.with? "binutils"))
 
     args << onoff("-DTPL_ENABLE_TBB:BOOL=",         (build.with? "tbb"))
     args << onoff("-DTPL_ENABLE_X11:BOOL=",         (build.with? :x11))
