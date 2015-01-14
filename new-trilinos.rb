@@ -31,11 +31,7 @@ class NewTrilinos < Formula
   depends_on "adol-c"       => :optional
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :optional
-  depends_on "eigen"        => :optional #Experimental TPL, Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
-  depends_on "glpk"         => :optional #Experimental TPL
-  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) #Experimental TPL
   depends_on "hwloc"        => :optional
-  depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile; experimental TPL
   depends_on "metis"        => :optional
   depends_on "mumps"        => :optional
   #-depends_on "petsc"        => :optional # ML packages in the current state does not compile with Petsc >= 3.3
@@ -43,12 +39,18 @@ class NewTrilinos < Formula
   depends_on "scalapack"    => ["--with-shared-libs", :optional]
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
-  depends_on "tbb"          => :recommended #Experimental TPL => :optional?
   depends_on "qd"           => :optional # Fails due to global namespace issues (std::pow vs qd::pow)
-  #-depends_on "lemon"        => :optional #Experimental TPL, lemon is currently built as executable only, no libraries!
-  depends_on "glm"          => :optional #Experimental TPL
-  #-depends_on "cask"         => :optional #Experimental TPL, cask is currently built as executable only, no libraries!
   depends_on "binutils"     => :optional #libiberty-related PR: #35881
+  
+  # Experimental TPLs:
+  depends_on "eigen"        => :optional #Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
+  depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
+  depends_on "glpk"         => :optional
+  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
+  depends_on "tbb"          => :recommended
+  depends_on "glm"          => :optional
+  #-depends_on "lemon"        => :optional #lemon is currently built as executable only, no libraries
+  #-depends_on "cask"         => :optional # cask is currently built as executable only, no libraries
 
   #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
 
