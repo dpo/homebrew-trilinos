@@ -40,8 +40,8 @@ class NewTrilinos < Formula
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
   depends_on "qd"           => :optional # Fails due to global namespace issues (std::pow vs qd::pow)
-  depends_on "binutils"     => :optional #libiberty-related PR: #35881
-  
+  #-depends_on "binutils"     => :optional #libiberty-related PR: #35881; Yet, still miss link.h ...
+
   # Experimental TPLs:
   depends_on "eigen"        => :optional #Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
@@ -72,7 +72,10 @@ class NewTrilinos < Formula
                -DTrilinos_WARNINGS_AS_ERRORS_FLAGS=""
                -DTrilinos_ENABLE_OpenMP:BOOL=OFF
                -DSacado_ENABLE_TESTS=OFF
+               -DTPL_ENABLE_Matio=OFF
                -DEpetraExt_ENABLE_TESTS=OFF]  # --with-hypre fails without this.
+
+    args << "-DTrilinos_ASSERT_MISSING_PACKAGES=OFF" if build.head?
 
     args << onoff("-DTPL_ENABLE_MPI:BOOL=",         (build.with? :mpi))
     args << onoff("-DTrilinos_ENABLE_OpenMP:BOOL=", (ENV.compiler != :clang))
