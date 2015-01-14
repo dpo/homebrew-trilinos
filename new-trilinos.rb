@@ -23,14 +23,7 @@ class NewTrilinos < Formula
   depends_on "boost"        => :recommended
   depends_on "scotch"       => :recommended
   depends_on "netcdf"       => :optional
-  depends_on "adol-c"       => :optional
-  #TODO:
-  #from trilinos' cmake:
-    # NOTE: ADOL-C has a bug in the installtion process.  It fails to
-    # install the file "config.h" into the install directory.  This is
-    # required to compile the library, so you must manually copy the file
-    # over into the installation directory.
-  #indeed: --     Did not find ADOLC TPL header: adolc/config.h
+  depends_on "adol-c"       => :optional # TODO: move ADOL-C's config.h to prefix/include/adolc/config.h
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :optional
   depends_on "eigen"        => :optional #Experimental TPL, Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
@@ -40,21 +33,17 @@ class NewTrilinos < Formula
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Currently fails, experimental TPL
   depends_on "metis"        => :optional
   depends_on "mumps"        => :optional
-  # ML packages in the current state does not compile with Petsc >= 3.3
-  # depends_on "petsc"        => :optional
+  depends_on "petsc"        => :optional # ML packages in the current state does not compile with Petsc >= 3.3
   depends_on "parmetis"     => :optional if build.with? :mpi
   depends_on "scalapack"    => :optional
   depends_on "superlu"      => :optional
   depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
   depends_on "tbb"          => :recommended #Experimental TPL => :optional?
   depends_on "qd"           => :optional # Currently fails due to global namespace issues
-  #TODO: lemon is currently built as executable only
-  #depends_on "lemon"        => :optional #Experimental TPL
+  depends_on "lemon"        => :optional #Experimental TPL, lemon is currently built as executable only, no libraries!
   depends_on "glm"          => :optional #Experimental TPL
-  #TODO: cask is currently built as executable only!
-  #depends_on "cask"         => :optional #Experimental TPL
-  #TODO: Error: Could not find a library in the set "iberty" for the TPL BinUtils!
-  #depends_on "binutils"     => :optional
+  depends_on "cask"         => :optional #Experimental TPL, cask is currently built as executable only, no libraries!
+  depends_on "binutils"     => :optional #Currently fails: Could not find a library in the set "iberty" for the TPL BinUtils!
 
   #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
 
@@ -108,9 +97,11 @@ class NewTrilinos < Formula
     args << "-DUMFPACK_LIBRARY_NAMES=umfpack;amd;colamd;cholmod;suitesparseconfig" if build.with? "suite-sparse"
 
     args << onoff("-DTPL_ENABLE_CppUnit:BOOL=",     (build.with? "cppunit"))
-    # gcc: add CPPUNIT include/lib dirs.
+    args << "-DCppUnit_LIBRARY_DIRS=#{Formula["cppunit"].opt_lib}" if build.with? "cppunit"
+
     args << onoff("-DTPL_ENABLE_Eigen:BOOL=",       (build.with? "eigen"))
     args << "-DEigen_INCLUDE_DIRS=#{Formula["eigen"].opt_include}/eigen3" if build.with? "eigen"
+
     args << onoff("-DTPL_ENABLE_GLPK:BOOL=",        (build.with? "glpk"))
     args << onoff("-DTPL_ENABLE_HDF5:BOOL=",        (build.with? "hdf5"))
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
@@ -118,9 +109,7 @@ class NewTrilinos < Formula
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
     args << onoff("-DTPL_ENABLE_METIS:BOOL=",       ((build.with? "metis") and (build.without? "parmetis")) )
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
-
-    # args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
-    args << "-DTPL_ENABLE_PETSC:BOOL=OFF"
+    args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
 
     args << onoff("-DTPL_ENABLE_ParMETIS:BOOL=",    (build.with? "parmetis"))
     args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
@@ -136,10 +125,10 @@ class NewTrilinos < Formula
     args << "-DSuperLUDist_INCLUDE_DIRS=#{Formula["superlu_dist"].opt_include}/superlu_dist" if build.with? "superlu_dist"
 
     args << onoff("-DTPL_ENABLE_QD:BOOL=",         (build.with? "qd"))
-    #args << onoff("-DTPL_ENABLE_Lemon:BOOL=",      (build.with? "lemon"))
+    args << onoff("-DTPL_ENABLE_Lemon:BOOL=",      (build.with? "lemon"))
     args << onoff("-DTPL_ENABLE_GLM:BOOL=",        (build.with? "glm"))
-    #args << onoff("-DTPL_ENABLE_CASK:BOOL=",       (build.with? "cask"))
-    #args << onoff("-DTPL_ENABLE_BinUtils:BOOL=",   (build.with? "binutils"))
+    args << onoff("-DTPL_ENABLE_CASK:BOOL=",       (build.with? "cask"))
+    args << onoff("-DTPL_ENABLE_BinUtils:BOOL=",   (build.with? "binutils"))
 
     args << onoff("-DTPL_ENABLE_TBB:BOOL=",         (build.with? "tbb"))
     args << onoff("-DTPL_ENABLE_X11:BOOL=",         (build.with? :x11))
