@@ -7,7 +7,6 @@ class NewTrilinos < Formula
   option "with-teko",  "Enable the Teko secondary-stable package"
   option "with-shylu", "Enable the ShyLU experimental package"
   option "with-check", "Perform build time checks (time consuming and contains failures)"
-  option "with-release",    "Perform release build"
   option :cxx11
 
   option "with-cholmod", "Build with Cholmod (Experimental TPL) from suite-sparse"
@@ -64,7 +63,7 @@ class NewTrilinos < Formula
   end
 
   def install
-    args  = (build.with? "release") ? %W[-DCMAKE_INSTALL_PREFIX=#{prefix} -DCMAKE_BUILD_TYPE=Release] : std_cmake_args
+    args  = %W[-DCMAKE_INSTALL_PREFIX=#{prefix} -DCMAKE_BUILD_TYPE=Release]
     args += %w[-DBUILD_SHARED_LIBS=ON
                -DTPL_ENABLE_BLAS=ON
                -DTPL_ENABLE_LAPACK=ON
