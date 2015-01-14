@@ -155,7 +155,9 @@ class NewTrilinos < Formula
     args << "-DPyTrilinos_INSTALL_PREFIX:PATH=#{prefix}" if build.with? :python
 
     mkdir "build" do
-      system "cmake", "..", *args
+      system "cmake", "..", *args, " 2>&1 | tee config.out"
+      system 'grep "Final set of .*enabled SE packages" config.out > se_packages.txt'
+      prefix.install "se_packages.txt"
       system "make", "VERBOSE=1"
       system ("ctest -j" + Hardware::CPU.cores) if build.with? "check"
       system "make", "install"
