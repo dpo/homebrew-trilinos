@@ -43,7 +43,7 @@ class NewTrilinos < Formula
   depends_on "lemon"        => :optional #Experimental TPL, lemon is currently built as executable only, no libraries!
   depends_on "glm"          => :optional #Experimental TPL
   depends_on "cask"         => :optional #Experimental TPL, cask is currently built as executable only, no libraries!
-  depends_on "binutils"     => :optional #Currently fails: Could not find a library in the set "iberty" for the TPL BinUtils!
+  depends_on "binutils"     => :optional #Currently fails, miss libiberty, see https://github.com/facebook/atosl/issues/12
 
   #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
 
