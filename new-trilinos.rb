@@ -31,7 +31,7 @@ class NewTrilinos < Formula
   #indeed: --     Did not find ADOLC TPL header: adolc/config.h
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :optional
-  depends_on "eigen"        => :optional #Experimental TPL
+  depends_on "eigen"        => :optional #Experimental TPL, Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "glpk"         => :optional #Experimental TPL
   depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) #Experimental TPL
   depends_on "hwloc"        => :optional
@@ -43,7 +43,7 @@ class NewTrilinos < Formula
   depends_on "parmetis"     => :optional if build.with? :mpi
   depends_on "scalapack"    => :optional
   depends_on "superlu"      => :optional
-  depends_on "superlu_dist" => :optional if build.with? :mpi
+  depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
   depends_on "tbb"          => :recommended #Experimental TPL => :optional?
   depends_on "qd"           => :optional
   #TODO: lemon is currently built as executable only
@@ -92,6 +92,7 @@ class NewTrilinos < Formula
 
     args << onoff("-DTPL_ENABLE_AMD:BOOL=",         (build.with? "suite-sparse"))
     #Cholmod and CSparse are Experimental TPL => extra option to turn them on?
+    # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
     args << onoff("-DTPL_ENABLE_CSparse:BOOL=",     (build.with? "suite-sparse"))
     args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     (build.with? "suite-sparse"))
     args << onoff("-DTPL_ENABLE_UMFPACK:BOOL=",     (build.with? "suite-sparse"))
