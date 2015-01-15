@@ -41,7 +41,7 @@ class NewTrilinos < Formula
   depends_on "parmetis"     => :recommended if build.with? :mpi
   depends_on "scalapack"    => ["with-shared-libs", :recommended]
   depends_on "superlu"      => :recommended
-  depends_on "superlu_dist" => :recommended if build.with? :mpi
+  depends_on "superlu_dist" => :recommended if build.with? "parmetis"
   #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
   #-depends_on "binutils"     => :optional                                          # libiberty is deliberately omitted in Homebrew (see PR #35881)
 
