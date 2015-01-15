@@ -37,6 +37,7 @@ class NewTrilinos < Formula
   depends_on "hwloc"        => :recommended
   depends_on "metis"        => :recommended
   depends_on "mumps"        => :recommended
+  depends_on "doxygen"      => ["with-dot", :recommended]
   #-depends_on "petsc"        => :optional                                          # ML packages in the current state does not compile with Petsc >= 3.3
   depends_on "parmetis"     => :recommended if build.with? :mpi
   depends_on "scalapack"    => ["with-shared-libs", :recommended]
