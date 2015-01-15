@@ -40,7 +40,7 @@ class NewTrilinos < Formula
   depends_on "parmetis"     => :recommended if build.with? :mpi
   depends_on "scalapack"    => ["with-shared-libs", :recommended]
   depends_on "superlu"      => :recommended
-  #-depends_on "superlu_dist" => :optional if build.with? :mpi                      # packages/amesos/src/Amesos_Superludist.cpp:476:83: error: use of undeclared identifier 'DOUBLE'
+  depends_on "superlu_dist" => :optional if build.with? :mpi
   #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
   #-depends_on "binutils"     => :optional                                          # libiberty is deliberately omitted in Homebrew (see PR #35881)
 
@@ -161,10 +161,13 @@ class NewTrilinos < Formula
     args << onoff("-DTrilinos_ENABLE_PyTrilinos:BOOL=", (build.with? :python))
     args << "-DPyTrilinos_INSTALL_PREFIX:PATH=#{prefix}" if build.with? :python
 
+    # cant make it work:
+    # args << "2>&1 | tee config.out"
+
     mkdir "build" do
-      system "cmake", "..", *args, " 2>&1 | tee config.out"
-      system 'grep "Final set of .*enabled SE packages" config.out > se_packages.txt'
-      prefix.install "se_packages.txt"
+      system "cmake", "..", *args
+      #system 'grep "Final set of .*enabled SE packages" config.out > se_packages.txt'
+      #prefix.install "se_packages.txt"
       system "make", "VERBOSE=1"
       system ("ctest -j" + Hardware::CPU.cores) if build.with? "check"
       system "make", "install"
