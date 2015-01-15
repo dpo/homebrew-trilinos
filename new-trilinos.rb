@@ -4,8 +4,8 @@ class NewTrilinos < Formula
   sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
   head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git
 
-  option "with-teko",  "Enable the Teko secondary-stable package"
-  option "with-shylu", "Enable the ShyLU experimental package"
+  option "with-teko",  "Enable the Teko secondary-stable package"                    # Problem?
+  option "with-shylu", "Enable the ShyLU experimental package"                       # Problem?
   option "with-check", "Perform build time checks (time consuming and contains failures)"
   option :cxx11
 
@@ -15,7 +15,7 @@ class NewTrilinos < Formula
   # They are not removed in order to avoid fruitless attempts to add them later
 
   option "with-cholmod", "Build with Cholmod (Experimental TPL) from suite-sparse"
-  option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse" # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
+  #-option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse" # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
 
   depends_on :mpi           => [:cc, :cxx, :recommended]
   depends_on :fortran       => :recommended
@@ -27,30 +27,30 @@ class NewTrilinos < Formula
   depends_on "cmake"        => :build
   depends_on "boost"        => :recommended
   depends_on "scotch"       => :recommended
-  depends_on "netcdf"       => :optional
-  depends_on "adol-c"       => :optional
+  depends_on "netcdf"       => ["with-fortran",:recommended]
+  depends_on "adol-c"       => :recommended
   depends_on "suite-sparse" => :recommended
-  depends_on "cppunit"      => :optional
-  depends_on "hwloc"        => :optional
-  depends_on "metis"        => :optional
-  depends_on "mumps"        => :optional
-  #-depends_on "petsc"        => :optional # ML packages in the current state does not compile with Petsc >= 3.3
-  depends_on "parmetis"     => :optional if build.with? :mpi
-  depends_on "scalapack"    => ["--with-shared-libs", :optional]
-  depends_on "superlu"      => :optional
-  depends_on "superlu_dist" => :optional if build.with? :mpi # Currently fails
-  depends_on "qd"           => :optional # Fails due to global namespace issues (std::pow vs qd::pow)
-  #-depends_on "binutils"     => :optional #libiberty-related PR: #35881; Yet, still miss link.h ...
+  depends_on "cppunit"      => :recommended
+  depends_on "hwloc"        => :optional                                            # Problem?
+  depends_on "metis"        => :recommended
+  depends_on "mumps"        => :recommended
+  #-depends_on "petsc"        => :optional                                          # ML packages in the current state does not compile with Petsc >= 3.3
+  depends_on "parmetis"     => :recommended if build.with? :mpi
+  depends_on "scalapack"    => ["with-shared-libs", :recommended]                   # TTrilinos needs BLACS for Scalapack?
+  depends_on "superlu"      => :recommended
+  #-depends_on "superlu_dist" => :optional if build.with? :mpi                      # packages/amesos/src/Amesos_Superludist.cpp:476:83: error: use of undeclared identifier 'DOUBLE'
+  #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
+  #-depends_on "binutils"     => :optional                                          # libiberty is deliberetly ommited in Homebrew (see PR #35881)
 
-  # Experimental TPLs:
-  depends_on "eigen"        => :optional #Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
+  # Experimental TPLs (all but tbb are turned off by default):
+  #-depends_on "eigen"        => :optional                                          # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :optional
   depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :optional
-  #-depends_on "lemon"        => :optional #lemon is currently built as executable only, no libraries
-  #-depends_on "cask"         => :optional # cask is currently built as executable only, no libraries
+  #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
+  #-depends_on "cask"         => :optional                                          # cask is currently built as executable only, no libraries
 
   #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
 
@@ -71,8 +71,8 @@ class NewTrilinos < Formula
                -DTrilinos_VERBOSE_CONFIGURE:BOOL=OFF
                -DTrilinos_WARNINGS_AS_ERRORS_FLAGS=""
                -DTrilinos_ENABLE_OpenMP:BOOL=OFF
-               -DSacado_ENABLE_TESTS=OFF
                -DTPL_ENABLE_Matio=OFF
+               -DSacado_ENABLE_TESTS=OFF
                -DEpetraExt_ENABLE_TESTS=OFF]  # --with-hypre fails without this.
 
     args << "-DTrilinos_ASSERT_MISSING_PACKAGES=OFF" if build.head?
@@ -124,7 +124,6 @@ class NewTrilinos < Formula
     args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
     args << "-DParMETIS_INCLUDE_DIRS=#{Formula["parmetis"].opt_include}" if build.with? "parmetis"
 
-    # TODO: apparently Trilinos needs BLACS for Scalapack
     args << onoff("-DTPL_ENABLE_SCALAPACK:BOOL=",   (build.with? "scalapack"))
 
     args << onoff("-DTPL_ENABLE_SuperLU:BOOL=",     (build.with? "superlu"))
