@@ -134,9 +134,16 @@ class NewTrilinos < Formula
       args << "-DTPL_ENABLE_HDF5:BOOL=OFF"
     end
 
-    args << onoff("-DTPL_ENABLE_ParMETIS:BOOL=",    (build.with? "parmetis"))
-    args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
-    args << "-DParMETIS_INCLUDE_DIRS=#{Formula["parmetis"].opt_include}" if build.with? "parmetis"
+    if build.with? "parmetis"
+      args << "-DTPL_ENABLE_ParMETIS:BOOL=ON"
+      # note that Metis (5) is required by Parmetis so it is safe to wright:
+      args << "-DTParMETIS_LIBRARIES=#{Formula["parmetis"].opt_lib}/libparmetis.a;#{Formula["metis"].opt_lib}/libmetis.a"
+      # whereas the following could potentially pickup metis4
+      #args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
+      #args << "-DParMETIS_INCLUDE_DIRS=#{Formula["parmetis"].opt_include}" if build.with? "parmetis"
+    else
+      args << "-DTPL_ENABLE_ParMETIS:BOOL=OFF"
+    end
 
     args << onoff("-DTPL_ENABLE_SCALAPACK:BOOL=",   (build.with? "scalapack"))
 
