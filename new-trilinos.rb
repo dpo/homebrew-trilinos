@@ -4,10 +4,10 @@ class NewTrilinos < Formula
   sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
   head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git
 
-  option "with-teko",  "Enable the Teko secondary-stable package"                    # Problem?
-  option "with-shylu", "Enable the ShyLU experimental package"                       # Problem?
+  option "with-teko",  "Enable the Teko secondary-stable package"
+  option "with-shylu", "Enable the ShyLU experimental package"
   option "with-check", "Perform build time checks (time consuming and contains failures)"
-  option :cxx11
+  option :cxx11                                                                      # Problem?
 
   # options and dependencies which are not supported with current version
   # are commented with #-
@@ -15,13 +15,13 @@ class NewTrilinos < Formula
   # They are not removed in order to avoid fruitless attempts to add them later
 
   option "with-cholmod", "Build with Cholmod (Experimental TPL) from suite-sparse"
-  #-option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse" # when CSparse is enabled: Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
+  #-option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse" # Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
 
   depends_on :mpi           => [:cc, :cxx, :recommended]
   depends_on :fortran       => :recommended
   depends_on :x11           => :recommended
 
-  depends_on :python        => ["numpy", :recommended]
+  depends_on :python        => ["numpy", :recommended]                               # Problem?
   depends_on "swig"         => :build if build.with? :python
 
   depends_on "cmake"        => :build
@@ -36,7 +36,7 @@ class NewTrilinos < Formula
   depends_on "mumps"        => :recommended
   #-depends_on "petsc"        => :optional                                          # ML packages in the current state does not compile with Petsc >= 3.3
   depends_on "parmetis"     => :recommended if build.with? :mpi
-  depends_on "scalapack"    => ["with-shared-libs", :recommended]                   # TTrilinos needs BLACS for Scalapack?
+  depends_on "scalapack"    => ["with-shared-libs", :recommended]
   depends_on "superlu"      => :recommended
   #-depends_on "superlu_dist" => :optional if build.with? :mpi                      # packages/amesos/src/Amesos_Superludist.cpp:476:83: error: use of undeclared identifier 'DOUBLE'
   #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
@@ -46,7 +46,7 @@ class NewTrilinos < Formula
   #-depends_on "eigen"        => :optional                                          # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :optional
-  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
+  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Problem?
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :optional
   #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
@@ -101,7 +101,6 @@ class NewTrilinos < Formula
     end
     args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     ((build.with? "suite-sparse") and (build.with? "cholmod")) )
 
-    #TODO?: --     Did not find UMFPACK TPL header: UFconfig.h
     args << onoff("-DTPL_ENABLE_UMFPACK:BOOL=",     (build.with? "suite-sparse"))
     args << "-DUMFPACK_LIBRARY_NAMES=umfpack;amd;colamd;cholmod;suitesparseconfig" if build.with? "suite-sparse"
 
