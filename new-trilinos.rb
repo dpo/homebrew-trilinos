@@ -46,7 +46,8 @@ class NewTrilinos < Formula
   #-depends_on "eigen"        => :optional                                          # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :optional
-  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
+  depends_on "hdf5"         => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
+  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) if build.without? "hdf5"
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :optional
   #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
@@ -115,13 +116,18 @@ class NewTrilinos < Formula
     args << "-DEigen_INCLUDE_DIRS=#{Formula["eigen"].opt_include}/eigen3" if build.with? "eigen"
 
     args << onoff("-DTPL_ENABLE_GLPK:BOOL=",        (build.with? "glpk"))
-    args << onoff("-DTPL_ENABLE_HDF5:BOOL=",        (build.with? "hdf5"))
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
     args << onoff("-DTPL_ENABLE_METIS:BOOL=",       ((build.with? "metis") and (build.without? "parmetis")) )
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
     args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
+
+    if (build.with? "hdf5") || (build.with? "hdf5-1.8.12")
+      args << "-DTPL_ENABLE_HDF5:BOOL=ON"
+    else
+      args << "-DTPL_ENABLE_HDF5:BOOL=OFF"
+    end
 
     args << onoff("-DTPL_ENABLE_ParMETIS:BOOL=",    (build.with? "parmetis"))
     args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
