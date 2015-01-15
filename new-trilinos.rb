@@ -42,11 +42,11 @@ class NewTrilinos < Formula
   #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
   #-depends_on "binutils"     => :optional                                          # libiberty is deliberately omitted in Homebrew (see PR #35881)
 
-  # Experimental TPLs (all but tbb are turned off by default):
+  # Experimental TPLs (all but tbb is turned off by default):
   #-depends_on "eigen"        => :optional                                          # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :optional
-  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # Problem?
+  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :optional
   #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
@@ -57,6 +57,10 @@ class NewTrilinos < Formula
   def onoff(s, cond)
     s + ((cond) ? "ON" : "OFF")
   end
+
+  # Patch FindTPLUMFPACK to work with UMFPACK>=5.6.0
+  # Amesos to work with Superlu_dist 3.3
+  patch :DATA
 
   def install
     args  = %W[-DCMAKE_INSTALL_PREFIX=#{prefix} -DCMAKE_BUILD_TYPE=Release]
@@ -172,3 +176,33 @@ class NewTrilinos < Formula
     # system "#{bin}/Tpetra_GEMMTiming_TPI.exe"  # Fails!!
   end
 end
+
+__END__
+diff --git a/cmake/TPLs/FindTPLUMFPACK.cmake b/cmake/TPLs/FindTPLUMFPACK.cmake
+index e26fc7e..f0b7ab6 100644
+--- a/cmake/TPLs/FindTPLUMFPACK.cmake
++++ b/cmake/TPLs/FindTPLUMFPACK.cmake
+@@ -55,6 +55,6 @@
+ 
+ 
+ TRIBITS_TPL_DECLARE_LIBRARIES( UMFPACK
+-  REQUIRED_HEADERS umfpack.h amd.h UFconfig.h
++  REQUIRED_HEADERS umfpack.h amd.h SuiteSparse_config.h
+   REQUIRED_LIBS_NAMES umfpack amd
+   )
+diff --git a/packages/amesos/src/Amesos_Superludist.cpp b/packages/amesos/src/Amesos_Superludist.cpp
+index 1fcac5d..12036fa 100644
+--- a/packages/amesos/src/Amesos_Superludist.cpp
++++ b/packages/amesos/src/Amesos_Superludist.cpp
+@@ -473,8 +473,8 @@ int Amesos_Superludist::Factor()
+     else                    PrivateSuperluData_->options_.ReplaceTinyPivot = (yes_no_t)NO;
+ 
+     if( IterRefine_ == "NO" ) PrivateSuperluData_->options_.IterRefine = (IterRefine_t)NO;
+-    else if( IterRefine_ == "DOUBLE" ) PrivateSuperluData_->options_.IterRefine = DOUBLE;
+-    else if( IterRefine_ == "EXTRA" ) PrivateSuperluData_->options_.IterRefine = EXTRA;
++    else if( IterRefine_ == "DOUBLE" ) PrivateSuperluData_->options_.IterRefine = SLU_DOUBLE;
++    else if( IterRefine_ == "EXTRA" ) PrivateSuperluData_->options_.IterRefine = SLU_EXTRA;
+ 
+     //  Without the following two lines, SuperLU_DIST cannot be made
+     //  quiet.
+
