@@ -124,7 +124,12 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
-    args << onoff("-DTPL_ENABLE_METIS:BOOL=",       ((build.with? "metis") and (build.without? "parmetis")) )
+    if (build.with? "metis") and (build.without? "parmetis")
+      args << "-DTPL_ENABLE_METIS:BOOL=ON"
+      args << "-DMETIS_LIBRARY_DIRS=#{Formula["metis"].opt_lib}"
+    else
+      args << "-DTPL_ENABLE_METIS:BOOL=OFF"
+    end
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
     args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
 
