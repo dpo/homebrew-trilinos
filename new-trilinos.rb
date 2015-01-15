@@ -9,7 +9,7 @@ class NewTrilinos < Formula
   option "with-check", "Perform build time checks (time consuming and contains failures)"
   option :cxx11
 
-  # options and dependencies which are not supported with current version 
+  # options and dependencies which are not supported with current version
   # are commented with #-
   # A short comment at the end of those lines explain each issue.
   # They are not removed in order to avoid fruitless attempts to add them later
@@ -31,7 +31,7 @@ class NewTrilinos < Formula
   depends_on "adol-c"       => :recommended
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :recommended
-  depends_on "hwloc"        => :optional                                            # Problem?
+  depends_on "hwloc"        => :recommended
   depends_on "metis"        => :recommended
   depends_on "mumps"        => :recommended
   #-depends_on "petsc"        => :optional                                          # ML packages in the current state does not compile with Petsc >= 3.3
@@ -40,7 +40,7 @@ class NewTrilinos < Formula
   depends_on "superlu"      => :recommended
   #-depends_on "superlu_dist" => :optional if build.with? :mpi                      # packages/amesos/src/Amesos_Superludist.cpp:476:83: error: use of undeclared identifier 'DOUBLE'
   #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
-  #-depends_on "binutils"     => :optional                                          # libiberty is deliberetly ommited in Homebrew (see PR #35881)
+  #-depends_on "binutils"     => :optional                                          # libiberty is deliberately omitted in Homebrew (see PR #35881)
 
   # Experimental TPLs (all but tbb are turned off by default):
   #-depends_on "eigen"        => :optional                                          # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
