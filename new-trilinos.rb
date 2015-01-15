@@ -126,7 +126,9 @@ class NewTrilinos < Formula
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
     if (build.with? "metis") and (build.without? "parmetis")
       args << "-DTPL_ENABLE_METIS:BOOL=ON"
-      args << "-DMETIS_LIBRARY_DIRS=#{Formula["metis"].opt_lib}"
+      args << "-DMETIS_LIBRARIES=#{Formula["metis"].opt_lib}/libmetis.a"
+      args << "-DMETIS_INCLUDE_DIRS=#{Formula["metis"].opt_include}"
+      # args << "-DMETIS_LIBRARY_DIRS=#{Formula["metis"].opt_lib}"
     else
       args << "-DTPL_ENABLE_METIS:BOOL=OFF"
     end
@@ -194,12 +196,12 @@ class NewTrilinos < Formula
     system "mpirun", "-np", "2", "#{bin}/Epetra_BasicPerfTest_test.exe", "10", "12", "1", "2", "9", "-v" if build.with? :mpi
     system "#{bin}/Epetra_BasicPerfTest_test_LL.exe", "16", "12", "1", "1", "25", "-v"
     system "mpirun", "-np", "2", "#{bin}/Epetra_BasicPerfTest_test_LL.exe", "10", "12", "1", "2", "9", "-v" if build.with? :mpi
-    # system "#{bin}/Ifpack2_BelosTpetraHybridPlatformExample.exe"  # Missing library!!
+    # system "#{bin}/Ifpack2_BelosTpetraHybridPlatformExample.exe"                    # this file is not there
     system "#{bin}/KokkosClassic_SerialNodeTestAndTiming.exe"
-    system "#{bin}/KokkosClassic_TPINodeTestAndTiming.exe"
+    #-system "#{bin}/KokkosClassic_TPINodeTestAndTiming.exe"                          # this file is not there
     system "#{bin}/KokkosClassic_TBBNodeTestAndTiming.exe" if build.with? "tbb"
     system "#{bin}/Tpetra_GEMMTiming_TBB.exe" if build.with? "tbb"
-    # system "#{bin}/Tpetra_GEMMTiming_TPI.exe"  # Fails!!
+    # system "#{bin}/Tpetra_GEMMTiming_TPI.exe"                                       # Fails!!
   end
 end
 
