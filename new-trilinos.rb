@@ -4,6 +4,8 @@ class NewTrilinos < Formula
   sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
   head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git
 
+  keg_only "For debug purposes"
+
   option "with-teko",  "Enable the Teko secondary-stable package"
   option "with-shylu", "Enable the ShyLU experimental package"
   option "with-check", "Perform build time checks (time consuming and contains failures)"
