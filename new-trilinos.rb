@@ -51,7 +51,6 @@ class NewTrilinos < Formula
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :optional
   depends_on "hdf5"         => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
-  depends_on "homebrew/versions/hdf5-1.8.12" => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) if build.without? "hdf5"
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :optional
   #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
