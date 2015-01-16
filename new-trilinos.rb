@@ -102,7 +102,6 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_Scotch:BOOL=",      (build.with? "scotch"))
     args << onoff("-DTPL_ENABLE_Netcdf:BOOL=",      (build.with? "netcdf"))
     args << onoff("-DTPL_ENABLE_ADOLC:BOOL=",       (build.with? "adol-c"))
-
     args << onoff("-DTPL_ENABLE_AMD:BOOL=",         (build.with? "suite-sparse"))
 
     if (build.with? "suite-sparse") && (build.with? "csparse")
@@ -137,12 +136,7 @@ class NewTrilinos < Formula
 
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
     args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
-
-    if (build.with? "hdf5") || (build.with? "hdf5-1.8.12")
-      args << "-DTPL_ENABLE_HDF5:BOOL=ON"
-    else
-      args << "-DTPL_ENABLE_HDF5:BOOL=OFF"
-    end
+    args << onoff("-DTPL_ENABLE_HDF5:BOOL=",        (build.with? "hdf5"))
 
     if build.with? "parmetis"
       # Ensure CMake picks up METIS 5 and not METIS 4.
