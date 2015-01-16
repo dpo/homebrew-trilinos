@@ -2,19 +2,15 @@ class NewTrilinos < Formula
   homepage "http://trilinos.sandia.gov"
   url "http://trilinos.org/oldsite/download/files/trilinos-11.12.1-Source.tar.bz2"
   sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
-  head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git # it seems cmake keys have changed
-
-  keg_only "For debug purposes"
+  head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git
 
   option "with-teko",  "Enable the Teko secondary-stable package"
   option "with-shylu", "Enable the ShyLU experimental package"
   option "with-check", "Perform build time checks (time consuming and contains failures)"
-  option :cxx11                                                                      # Not tested
+  option :cxx11
 
-  # options and dependencies which are not supported with current version
-  # are commented with #-
-  # A short comment at the end of those lines explain each issue.
-  # They are not removed in order to avoid fruitless attempts to add them later
+  # options and dependencies not supported in the current version
+  # are commented out with #- and failure reasons are documented.
 
   option "with-cholmod", "Build with Cholmod (Experimental TPL) from suite-sparse"
   #-option "with-csparse", "Build with CSparse (Experimental TPL) from suite-sparse" # Undefined symbols for architecture x86_64: "Amesos_CSparse::Amesos_CSparse(Epetra_LinearProblem const&)"
@@ -23,7 +19,7 @@ class NewTrilinos < Formula
   depends_on :fortran       => :recommended
   depends_on :x11           => :recommended
 
-  depends_on :python        => ["numpy", :recommended]                               # Not tested
+  depends_on :python        => ["numpy", :recommended]
   depends_on "swig"         => :build if build.with? :python
 
   depends_on "cmake"        => :build
@@ -37,23 +33,25 @@ class NewTrilinos < Formula
   depends_on "metis"        => :recommended
   depends_on "mumps"        => :recommended
   depends_on "doxygen"      => ["with-dot", :recommended]
-  #-depends_on "petsc"        => :optional                                          # ML packages in the current state does not compile with Petsc >= 3.3
   depends_on "parmetis"     => :recommended if build.with? :mpi
   depends_on "scalapack"    => ["with-shared-libs", :recommended]
   depends_on "superlu"      => :recommended
   depends_on "superlu_dist" => :recommended if build.with? "parmetis"
-  #-depends_on "qd"           => :optional                                          # Fails due to global namespace issues (std::pow vs qd::pow)
-  #-depends_on "binutils"     => :optional                                          # libiberty is deliberately omitted in Homebrew (see PR #35881)
+
+  #-depends_on "petsc"        => :optional # ML packages currently do not compile with PETSc >= 3.3
+  #-depends_on "qd"           => :optional # Fails due to global namespace issues (std::pow vs qd::pow)
+  #-depends_on "binutils"     => :optional # libiberty is deliberately omitted in Homebrew (see PR #35881)
 
   # Experimental TPLs (all but tbb is turned off by default):
-  #-depends_on "eigen"        => :optional                                          # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
+  #-depends_on "eigen"        => :optional # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :optional
   depends_on "hdf5"         => [:optional] + ((build.with? :mpi) ? ["with-mpi"] : [])
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :optional
-  #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
-  #-depends_on "cask"         => :optional                                          # cask is currently built as executable only, no libraries
+
+  #-depends_on "lemon"        => :optional # lemon is currently built as executable only, no libraries
+  #-depends_on "cask"         => :optional # cask  is currently built as executable only, no libraries
 
   # Missing TPLS:
   # YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals,
@@ -85,8 +83,9 @@ class NewTrilinos < Formula
                -DTrilinos_WARNINGS_AS_ERRORS_FLAGS=""
                -DTrilinos_ENABLE_OpenMP:BOOL=OFF
                -DTPL_ENABLE_Matio=OFF
-               -DSacado_ENABLE_TESTS=OFF
-               -DEpetraExt_ENABLE_TESTS=OFF]  # --with-hypre fails without this.
+               -DSacado_ENABLE_TESTS=OFF]
+
+    args << "-DEpetraExt_ENABLE_TESTS=OFF" if build.with? "hypre"
 
     args << "-DTrilinos_ASSERT_MISSING_PACKAGES=OFF" if build.head?
 
@@ -126,15 +125,16 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_GLPK:BOOL=",        (build.with? "glpk"))
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
+
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
     if (build.with? "metis") && (build.without? "parmetis")
       args << "-DTPL_ENABLE_METIS:BOOL=ON"
       args << "-DMETIS_LIBRARIES=#{Formula["metis"].opt_lib}/libmetis.a"
       args << "-DMETIS_INCLUDE_DIRS=#{Formula["metis"].opt_include}"
-      # args << "-DMETIS_LIBRARY_DIRS=#{Formula["metis"].opt_lib}"
     else
       args << "-DTPL_ENABLE_METIS:BOOL=OFF"
     end
+
     args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
     args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
 
@@ -145,8 +145,8 @@ class NewTrilinos < Formula
     end
 
     if build.with? "parmetis"
-      args << "-DTPL_ENABLE_ParMETIS:BOOL=ON"
       # Ensure CMake picks up METIS 5 and not METIS 4.
+      args << "-DTPL_ENABLE_ParMETIS:BOOL=ON"
       args << "-DParMETIS_LIBRARIES=#{Formula["parmetis"].opt_lib}/libparmetis.a;#{Formula["metis"].opt_lib}/libmetis.a"
       args << "-DParMETIS_INCLUDE_DIRS=#{Formula["parmetis"].opt_include}"
     else
