@@ -2,8 +2,7 @@ class NewTrilinos < Formula
   homepage "http://trilinos.sandia.gov"
   url "http://trilinos.org/oldsite/download/files/trilinos-11.12.1-Source.tar.bz2"
   sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
-
-  # head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git # it seems cmake keys have changed
+  head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git # it seems cmake keys have changed
 
   keg_only "For debug purposes"
 
@@ -30,7 +29,7 @@ class NewTrilinos < Formula
   depends_on "cmake"        => :build
   depends_on "boost"        => :recommended
   depends_on "scotch"       => :recommended
-  depends_on "netcdf"       => ["with-fortran",:recommended]
+  depends_on "netcdf"       => ["with-fortran", :recommended]
   depends_on "adol-c"       => :recommended
   depends_on "suite-sparse" => :recommended
   depends_on "cppunit"      => :recommended
@@ -56,7 +55,12 @@ class NewTrilinos < Formula
   #-depends_on "lemon"        => :optional                                          # lemon is currently built as executable only, no libraries
   #-depends_on "cask"         => :optional                                          # cask is currently built as executable only, no libraries
 
-  #missing TPLS: YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals, Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF, Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini, ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD, BGQPAMI, BGPDCMF, ARPREC, ADIC
+  # Missing TPLS:
+  # YAML, BLACS, Y12M, XDMF, tvmet, thrust, taucs, SPARSEKIT, qpOASES, Portals,
+  # Pnetcdf, Peano, PaToH, PAPI, Pablo, Oski, OVIS, OpenNURBS, Nemesis, MF,
+  # Matio, MA28, LibTopoMap, InfiniBand, HPCToolkit, HIPS, gtest, gpcd, Gemini,
+  # ForUQTK, ExodusII, CUSPARSE, Cusp, CrayPortals, Coupler, Clp, CCOLAMD,
+  # BGQPAMI, BGPDCMF, ARPREC, ADIC
 
   def onoff(s, cond)
     s + ((cond) ? "ON" : "OFF")
@@ -102,13 +106,13 @@ class NewTrilinos < Formula
 
     args << onoff("-DTPL_ENABLE_AMD:BOOL=",         (build.with? "suite-sparse"))
 
-    if (build.with? "suite-sparse") and (build.with? "csparse")
+    if (build.with? "suite-sparse") && (build.with? "csparse")
       args << "-DTPL_ENABLE_CSparse:BOOL=ON"
       args << "-DCSparse_LIBRARY_NAMES=cxsparse;amd;colamd;suitesparseconfig"
     else
       args << "-DTPL_ENABLE_CSparse:BOOL=OFF"
     end
-    args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     ((build.with? "suite-sparse") and (build.with? "cholmod")) )
+    args << onoff("-DTPL_ENABLE_Cholmod:BOOL=",     ((build.with? "suite-sparse") && (build.with? "cholmod")))
 
     args << onoff("-DTPL_ENABLE_UMFPACK:BOOL=",     (build.with? "suite-sparse"))
     args << "-DUMFPACK_LIBRARY_NAMES=umfpack;amd;colamd;cholmod;suitesparseconfig" if build.with? "suite-sparse"
@@ -123,7 +127,7 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
     # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
-    if (build.with? "metis") and (build.without? "parmetis")
+    if (build.with? "metis") && (build.without? "parmetis")
       args << "-DTPL_ENABLE_METIS:BOOL=ON"
       args << "-DMETIS_LIBRARIES=#{Formula["metis"].opt_lib}/libmetis.a"
       args << "-DMETIS_INCLUDE_DIRS=#{Formula["metis"].opt_include}"
@@ -142,11 +146,9 @@ class NewTrilinos < Formula
 
     if build.with? "parmetis"
       args << "-DTPL_ENABLE_ParMETIS:BOOL=ON"
-      # note that Metis (5) is required by Parmetis so it is safe to wright:
+      # Ensure CMake picks up METIS 5 and not METIS 4.
       args << "-DParMETIS_LIBRARIES=#{Formula["parmetis"].opt_lib}/libparmetis.a;#{Formula["metis"].opt_lib}/libmetis.a"
       args << "-DParMETIS_INCLUDE_DIRS=#{Formula["parmetis"].opt_include}"
-      # whereas the following could potentially pickup metis4
-      #args << "-DParMETIS_LIBRARY_DIRS=#{Formula["parmetis"].opt_lib}" if build.with? "parmetis"
     else
       args << "-DTPL_ENABLE_ParMETIS:BOOL=OFF"
     end
@@ -177,13 +179,8 @@ class NewTrilinos < Formula
     args << onoff("-DTrilinos_ENABLE_PyTrilinos:BOOL=", (build.with? :python))
     args << "-DPyTrilinos_INSTALL_PREFIX:PATH=#{prefix}" if build.with? :python
 
-    # cant make it work:
-    # args << "2>&1 | tee config.out"
-
     mkdir "build" do
       system "cmake", "..", *args
-      #system 'grep "Final set of .*enabled SE packages" config.out > se_packages.txt'
-      #prefix.install "se_packages.txt"
       system "make", "VERBOSE=1"
       system ("ctest -j" + Hardware::CPU.cores) if build.with? "check"
       system "make", "install"
