@@ -42,7 +42,7 @@ class NewTrilinos < Formula
   #-depends_on "qd"           => :optional # Fails due to global namespace issues (std::pow vs qd::pow)
   #-depends_on "binutils"     => :optional # libiberty is deliberately omitted in Homebrew (see PR #35881)
 
-  # Experimental TPLs (all but tbb is turned off by default):
+  # Experimental TPLs:
   #-depends_on "eigen"        => :optional # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
   depends_on "hypre"        => [:recommended] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :recommended
