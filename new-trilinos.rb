@@ -85,6 +85,9 @@ class NewTrilinos < Formula
                -DTPL_ENABLE_Matio=OFF
                -DSacado_ENABLE_TESTS=OFF]
 
+    # info about the build system employed by Trilinos:
+    # https://tribits.org/doc/TribitsBuildQuickRef.html
+
     args << "-DEpetraExt_ENABLE_TESTS=OFF" if build.with? "hypre"
 
     args << "-DTrilinos_ASSERT_MISSING_PACKAGES=OFF" if build.head?
