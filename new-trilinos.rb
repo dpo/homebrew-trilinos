@@ -1,7 +1,7 @@
 class NewTrilinos < Formula
   homepage "http://trilinos.sandia.gov"
   url "http://trilinos.org/oldsite/download/files/trilinos-11.12.1-Source.tar.bz2"
-  sha1 "f24f401e2182003eb648d47a8e50a6322fdb79ec"
+  sha256 "a41539414529c65905260b3befe3aee4f1dd1015ff719f0f6b5a10902d576fda"
   head "https://software.sandia.gov/trilinos/repositories/publicTrilinos", :using => :git
 
   option "with-teko",  "Enable the Teko secondary-stable package"
@@ -19,22 +19,27 @@ class NewTrilinos < Formula
   depends_on :fortran       => :recommended
   depends_on :x11           => :recommended
 
-  depends_on :python        => ["numpy", :recommended]
-  depends_on "swig"         => :build if build.with? :python
+  depends_on :python        => :recommended
+  depends_on "homebrew/python/numpy"  if build.with? "python"
+  depends_on "swig"         => :build if build.with? "python"
 
   depends_on "cmake"        => :build
-  depends_on "boost"        => :recommended
-  depends_on "scotch"       => :recommended
-  depends_on "netcdf"       => ["with-fortran", :recommended]
+  depends_on "pkg-config"   => :build
+
+  depends_on "openblas" => :optional
+
   depends_on "adol-c"       => :recommended
-  depends_on "suite-sparse" => :recommended
+  depends_on "boost"        => :recommended
   depends_on "cppunit"      => :recommended
+  depends_on "doxygen"      => ["with-graphviz", :recommended]
   depends_on "hwloc"        => :recommended
   depends_on "metis"        => :recommended
   depends_on "mumps"        => :recommended
-  depends_on "doxygen"      => ["with-dot", :recommended]
-  depends_on "parmetis"     => :recommended if build.with? :mpi
-  depends_on "scalapack"    => ["with-shared-libs", :recommended]
+  depends_on "netcdf"       => ["with-fortran", :recommended]
+  depends_on "parmetis"     => :recommended if build.with? "mpi"
+  depends_on "scalapack"    => :recommended
+  depends_on "scotch"       => :recommended
+  depends_on "suite-sparse" => :recommended
   depends_on "superlu"      => :recommended
   depends_on "superlu_dist" => :recommended if build.with? "parmetis"
 
@@ -44,9 +49,9 @@ class NewTrilinos < Formula
 
   # Experimental TPLs:
   #-depends_on "eigen"        => :optional # Intrepid_test_Discretization_Basis_HGRAD_TET_Cn_FEM_ORTH_Test_02 fails to build
-  depends_on "hypre"        => [:recommended] + ((build.with? :mpi) ? ["with-mpi"] : []) # EpetraExt tests fail to compile
+  depends_on "hypre"        => [:recommended] + ((build.with? "mpi") ? ["with-mpi"] : []) # EpetraExt tests fail to compile
   depends_on "glpk"         => :recommended
-  depends_on "hdf5"         => [:recommended] + ((build.with? :mpi) ? ["with-mpi"] : [])
+  depends_on "hdf5"         => [:recommended] + ((build.with? "mpi") ? ["with-mpi"] : [])
   depends_on "tbb"          => :recommended
   depends_on "glm"          => :recommended
 
@@ -85,14 +90,27 @@ class NewTrilinos < Formula
                -DTPL_ENABLE_Matio=OFF
                -DSacado_ENABLE_TESTS=OFF]
 
-    # info about the build system employed by Trilinos:
-    # https://tribits.org/doc/TribitsBuildQuickRef.html
+    # constrain Cmake to look for libraries in homebrew's prefix
+    args << "-DCMAKE_PREFIX_PATH=#{HOMEBREW_PREFIX}"
+
+    # on Linux Trilinos might pick up wrong MPI.
+    # Can't specify "open-mpi" location as other (mpich)
+    # implementations may be used.
+    args << "-DMPI_BASE_DIR:PATH=#{HOMEBREW_PREFIX}" if build.with? "mpi"
+
+    # BLAS / LAPACK support
+    if build.with? "openblas"
+      args << "-DBLAS_LIBRARY_NAMES=openblas"
+      args << "-DBLAS_LIBRARY_DIRS=#{Formula['openblas'].opt_lib}"
+      args << "-DLAPACK_LIBRARY_NAMES=openblas"
+      args << "-DLAPACK_LIBRARY_DIRS=#{Formula['openblas'].opt_lib}"
+    end
 
     args << "-DEpetraExt_ENABLE_TESTS=OFF" if build.with? "hypre"
 
     args << "-DTrilinos_ASSERT_MISSING_PACKAGES=OFF" if build.head?
 
-    args << onoff("-DTPL_ENABLE_MPI:BOOL=",         (build.with? :mpi))
+    args << onoff("-DTPL_ENABLE_MPI:BOOL=",         (build.with? "mpi"))
     args << onoff("-DTrilinos_ENABLE_OpenMP:BOOL=", (ENV.compiler != :clang))
     args << onoff("-DTrilinos_ENABLE_CXX11:BOOL=",  (build.cxx11?))
 
@@ -128,8 +146,9 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_HWLOC:BOOL=",       (build.with? "hwloc"))
     args << onoff("-DTPL_ENABLE_HYPRE:BOOL=",       (build.with? "hypre"))
 
-    # METIS conflicts with ParMETIS in Trilinos config, see TPLsList.cmake in the source folder
-    if (build.with? "metis") && (build.without? "parmetis")
+    # Even though METIS seems to conflicts with ParMETIS in Trilinos config (see TPLsList.cmake in the source folder),
+    # we still need to provide METIS_INCLUDE_DIRS so that metis.h is picked up on Linuxbrew.
+    if (build.with? "metis")
       args << "-DTPL_ENABLE_METIS:BOOL=ON"
       args << "-DMETIS_LIBRARIES=#{Formula["metis"].opt_lib}/libmetis.a"
       args << "-DMETIS_INCLUDE_DIRS=#{Formula["metis"].opt_include}"
@@ -137,7 +156,14 @@ class NewTrilinos < Formula
       args << "-DTPL_ENABLE_METIS:BOOL=OFF"
     end
 
-    args << onoff("-DTPL_ENABLE_MUMPS:BOOL=",       (build.with? "mumps"))
+    # A hack for mumps 5.0
+    # TODO: use extra LIBRARY_NAMES with 5.0 only?
+    if (build.with? "mumps")
+      args << "-DTPL_ENABLE_MUMPS:BOOL=ON"
+      args << "-DMUMPS_LIBRARY_DIRS=#{Formula["mumps"].opt_prefix}"
+      args << "-DMUMPS_LIBRARY_NAMES=dmumps;pord;mumps_common"
+    end
+
     args << onoff("-DTPL_ENABLE_PETSC:BOOL=",       (build.with? "petsc"))
     args << onoff("-DTPL_ENABLE_HDF5:BOOL=",        (build.with? "hdf5"))
 
@@ -165,16 +191,16 @@ class NewTrilinos < Formula
     args << onoff("-DTPL_ENABLE_BinUtils:BOOL=",   (build.with? "binutils"))
 
     args << onoff("-DTPL_ENABLE_TBB:BOOL=",         (build.with? "tbb"))
-    args << onoff("-DTPL_ENABLE_X11:BOOL=",         (build.with? :x11))
+    args << onoff("-DTPL_ENABLE_X11:BOOL=",         (build.with? "x11"))
 
-    args << onoff("-DTrilinos_ENABLE_Fortran=",     (build.with? :fortran))
-    if build.with? :fortran
+    args << onoff("-DTrilinos_ENABLE_Fortran=",     (build.with? "fortran"))
+    if build.with? "fortran"
       libgfortran = `$FC --print-file-name libgfortran.a`.chomp
       ENV.append "LDFLAGS", "-L#{File.dirname libgfortran} -lgfortran"
     end
 
-    args << onoff("-DTrilinos_ENABLE_PyTrilinos:BOOL=", (build.with? :python))
-    args << "-DPyTrilinos_INSTALL_PREFIX:PATH=#{prefix}" if build.with? :python
+    args << onoff("-DTrilinos_ENABLE_PyTrilinos:BOOL=", (build.with? "python"))
+    args << "-DPyTrilinos_INSTALL_PREFIX:PATH=#{prefix}" if build.with? "python"
 
     mkdir "build" do
       system "cmake", "..", *args
@@ -186,9 +212,9 @@ class NewTrilinos < Formula
 
   test do
     system "#{bin}/Epetra_BasicPerfTest_test.exe", "16", "12", "1", "1", "25", "-v"
-    system "mpirun", "-np", "2", "#{bin}/Epetra_BasicPerfTest_test.exe", "10", "12", "1", "2", "9", "-v" if build.with? :mpi
+    system "mpirun", "-np", "2", "#{bin}/Epetra_BasicPerfTest_test.exe", "10", "12", "1", "2", "9", "-v" if build.with? "mpi"
     system "#{bin}/Epetra_BasicPerfTest_test_LL.exe", "16", "12", "1", "1", "25", "-v"
-    system "mpirun", "-np", "2", "#{bin}/Epetra_BasicPerfTest_test_LL.exe", "10", "12", "1", "2", "9", "-v" if build.with? :mpi
+    system "mpirun", "-np", "2", "#{bin}/Epetra_BasicPerfTest_test_LL.exe", "10", "12", "1", "2", "9", "-v" if build.with? "mpi"
     # system "#{bin}/Ifpack2_BelosTpetraHybridPlatformExample.exe"                    # this file is not there
     system "#{bin}/KokkosClassic_SerialNodeTestAndTiming.exe"
     #-system "#{bin}/KokkosClassic_TPINodeTestAndTiming.exe"                          # this file is not there
